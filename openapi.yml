@@ -1,0 +1,225 @@
+openapi: 3.0.1
+info:
+  title: User Service
+  description: User service is a demo service
+  
+  version: 1.0.0
+servers:
+- url: https://api.evq.csp.slb.com/osdu/user-service
+  description: QA
+security:
+- bearer: []
+- appkey: []
+paths:
+  /v1/user/{id}:
+    get:
+      tags:
+      - User Service
+      summary: Get user details
+      description: |-
+      
+        Get user details
+        
+        **Required roles**: 'service.status-processor.viewers'. Users added to groups 'users.datalake.viewers', 'users.datalake.editors', 'users.datalake.admins', 'users.datalake.ops' would be added to group 'service.status-processor.viewers' by default.
+      operationId: datasetDetailsQuery
+      parameters:
+      - name: data-partition-id
+        in: header
+        description: Specifies the data partition to use
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          example: slb-osdu-dev-des-prod-testing
+      - in: path
+        name: id
+        description: user id
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Query response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userQueryResponse'
+        400:
+          description: Bad user input. Mandatory fields missing or unacceptable value
+            passed to API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseFormat'
+        401:
+          description: Unknown or invalid user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseFormat'
+        403:
+          description: User not authorized to perform the action
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseFormat'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseFormat'
+      deprecated: false
+  /v1/user:
+    post:
+      tags:
+      - User Service
+      summary: Create user
+      description: |-
+        Create user.
+        
+         **Required roles**: 'service.status-processor.viewers'. Users added to groups 'users.datalake.viewers', 'users.datalake.editors', 'users.datalake.admins', 'users.datalake.ops' would be added to group 'service.status-processor.viewers' by default.
+      operationId: userCreate
+      parameters:
+      - name: data-partition-id
+        in: header
+        description: Specifies the data partition to use
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          example: slb-osdu-dev-des-prod-testing
+
+      requestBody:
+        description: Create user request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createUserRequest'
+            example: 
+              userName: abc
+              address: xyz
+        required: true
+      responses:
+        200:
+          description: Create user response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createUserResponse'
+              example: 
+                userId: 123
+                userName: abc
+                address: xyz
+        400:
+          description: Bad user input. Mandatory fields missing or unacceptable value
+            passed to API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseFormat'
+        401:
+          description: Unknown or invalid user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseFormat'
+        403:
+          description: User not authorized to perform the action
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseFormat'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseFormat'
+                
+      deprecated: false
+components:
+  schemas:
+    ErrorModel:
+      type: object
+      properties:
+        code:
+          type: number
+          format: int32
+        status:
+          type: string
+        timestamp:
+          type: string
+        message:
+          type: string
+    ErrorResponseFormat:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorModel'
+      description: An error that occurs during normal application logic
+    
+    createUserRequest:
+      description: Create user request
+      type: object
+      properties:
+        userName:
+          type: string
+          minLength: 3
+          maxLength: 10
+        address:
+          type: string
+          minLength: 3
+          maxLength: 10
+        salary:
+          type: number
+          format: int32
+          minimum: 1000
+        numbers:
+          type: array
+          items: 
+            type: number
+            format: int32
+            minimum: 0
+            maximum: 50
+          minItems: 1
+          maxItems: 5
+      required:
+        - userName
+    createUserResponse:
+      description: Create user response
+      type: object
+      properties:
+        userId:
+          type: number
+          format: int64
+      example:
+        userId: 123
+    userQueryResponse:
+      description: User details
+      type: object
+      properties:
+        userId:
+          type: number
+          format: int64
+        userName:
+          type: string
+          description: Name of User
+        address:
+          type: string
+          description: Address of user
+      example:
+        userId: 123
+        userName: abc
+        address: xyz
+  securitySchemes:
+    bearer:
+      type: apiKey
+      name: Authorization
+      in: header
+    appkey:
+      type: apiKey
+      name: appkey
+      in: header
